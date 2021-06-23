@@ -1,210 +1,43 @@
-# Dash Sample Apps [![CircleCI](https://circleci.com/gh/plotly/dash-sample-apps.svg?style=svg)](https://circleci.com/gh/plotly/dash-sample-apps)
+# Interactive-Visulizations-with-Plotly-Dash
 
-This monorepo contains open-source apps demoing
-various capabilities of Dash and integration with
-the Python or R ecosystem. Most of the apps here
-are hosted on the 
-[Dash Gallery](https://dash-gallery.plotly.host/Portal/),
-which runs on the
-[Dash Kubernetes](https://plotly.com/dash/kubernetes/) platform
-and host both open-source apps and demos for 
-[Design Kit](https://plotly.com/dash/design-kit/) and 
-[Snapshot Engine](https://plotly.com/dash/snapshot-engine/). Reach
-out to [get a demo](https://plotly.com/get-demo/) of our licensed 
-products.
+# VISUALIZATION OF END GAME CHESS PIECES
 
-## Running an example app after cloning the repo
+## Motivation
 
-You will need to run applications, and specify filenames, from the
-root directory of the repository. e.g., if the name of the app you
-want to run is `my_dash_app` and the app filename is `app.py`, you
-would need to run `python apps/my_dash_app/app.py` from the root
-of the repository.
+Chess is one of the oldest games in history (reportedly invented in India, around the 7th centuryAD) that is still played today. As society evolved, so did the game, and how it is played. The advent of the Internet thrusted the game into an entirely new medium, enabling players to connect regardless of their location. Recent events like the global pandemic (which forced society to adapt their lifestyle) and the overwhelming popularity of the Netflix show “The Queen’s Gambit” revitalized the sport, as the number of played games online has skyrocketed in the past year. 
 
-Each app has a requirements.txt, install the dependencies in a virtual
-environment.
+It is commonly said one can go their entire life without ever playing the same game of chess twice. However, with only 64 squares on the board, players will likely face similar situations very often. Their pieces too, as their movement patterns are defined by specific rules. Considering such a wide range of possible piece journeys, is there common ground at the end of that road? For this project, we have decided to answer such questions and visualize the most common position for the pieces in the board at the end of a game, via a heatmap. Does it change much depending on the player’s skill level? How much do pieces travel, considering games with different move length? How do these hotspots change for either player for different outcomes? For example, is there a square in which the King is more often checkmated?
 
-## Downloading and running a single app
+## Dataset Description
 
-Visit the [releases page](https://github.com/plotly/dash-sample-apps/releases) and download and `unzip` the app you want. Then `cd` into the app directory and install its dependencies in a virtual environment in the following way:
+The dataset was produced from data obtained from the Lichess open database [1], which hosts millions of games in PGN format, which have been parsed and stored as a .csv file. Due to size constraints and limitations, the PGN corresponding the month of April 2017, was chosen, and a sample of 5000 games were extracted from it. For this purpose, the pandas library was used in conjunction with the python-chess library. Information derived from the game includes winners, payer’s elo rating, played moves, chess piece positions, time control, and game types. 
 
-```bash
-python -m venv venv
-source venv/bin/activate  # Windows: \venv\scripts\activate
-pip install -r requirements.txt
-```
+## Visualization and Interactive Choices
 
-then run the app:
-```bash
-python app.py
-```
+Design wise, the presentation is meant to be simple but intuitive: a single chessboard where hotspots can be visualized was construed as the main piece of the visualization, while a range of interactable components are employed to add interactivity and functionality. Link to the app: https://chess-checkmate-king.herokuapp.com
 
-## Contributing to the sample apps repo
+## Technical Aspects
 
-_"DDS app" below refers to the deployed application. For example, if
-the deployment will eventually be hosted at
-https://dash-gallery.plotly.host/my-dash-app, "DDS app name" is
-`my-dash-app`._
+Accessing the dataset was the first challenge that had to be overcome, because of the large file size. Therefore, analyzing data over time was out of the question. Post extraction, the next challenge is in accessing, parsing, and extracting relevant information from the respective files. Chess games are typically encoded in Portable Games Notation (PGN) files which require programmatic APIs and libraries such as Python-chess to draw information from it and transform it into a plottable-ready structure. For this purpose, code was adapted from similar projects, and created from scratch, so that a new csv file that could be read and easily transformed was produced. 
 
-### Adding a new app
+Deploying an app online through Heroku is a herculean task that forces additional constraints on the layout and available options regarding interaction and visualization. Specifically, the memory requirements for web deployment required us to significantly downscale the dataset, choosing between additional filters/interactivity and sample size, because it was generally running out of memory during deployment. Making the visualizations smooth and fluid, as well as animated, was as challenging as it was rewarding. Specific techniques had to be employed under the hood, since plotly does not natively support animations for heatmaps which we had initially employed. Therefore, while the result technically looks like a chessboard, underneath it is a combination of three different scatterplots, with carefully manipulated axes and value outputs.
 
-Create an app on Dash Playground. This will be the location of the
-auto-deployment. To do this, log into the app manager on
-[dash-playground.plotly.host](https://dash-playground.plotly.host)
-and click "initialize app".
+During our testing of the deployed web app, we were faced with issues related to updates to certain filters (which appeared to change randomly to different sets of choices), that we could not reproduce locally, or even a short while after redeployment. One possible hypothesis is that our input and output pipeline in Dash is not efficient, and the assignment of some variables fails in this process. Regardless, the output is still accurate. The app will also run into errors if there are no valid games to display in the stacked bar after filtering, which is a possibility if a user decides to seek out outliers, such as games with a very high number of moves. Part of this is related to how plotly updates and displays such graphs. 
 
-Create a branch from `master` to work on your app, the name is not required
-to be anything specific. Switch to this branch, then navigate to the `apps/`
-directory and add a directory for your app.
+For this reason, and because the interest of the visualization is on viewing a vast quantity of games, a catch-all feature for this issue was not prioritized.
 
-There are two options when you are naming the folder:
+## Discussion
 
-1. Make the folder have the _exact same_ name as the Dash app name.
+We have deployed an app that allows us to visualize heatmap of pieces at the end of the game, as well as filter for specific conditions, game states, and pieces. Besides the dataset size limitation mentioned previously, the visualization is limited by the number of pieces’ heatmaps one can visualize at once, as well as being confined to end of game positions. Another limitation pertains the automatic scaling of elements in specific screens, which may break the order and shape of the visualization. In the future, one can expand the depth of this visualization by adding an additional chessboard so that both white and black pieces can be visualized at once (or other combination of pieces). 
+One can also analyze a path for a specific piece for the entire game, or dynamically change the visualization for a specific point in the game. These two expansions would require the extraction and curated parsing of substantially more information from PGN’s. However, some of these visualizations already exist in the form of some published projects, such as [2] and [3].
 
-2. (Python apps only) Select any other name, but _update the file
-   [`apps_mapping.py`](apps_directory_mapping.py)_ with the Dash app
-   name and the folder name you have selected.
+## References
 
-Navigate to the directory you just created, and write a small README
-that only contains the name of the app. Stage the README and commit it
-to your branch.
-
-See [project boilerplate!](https://github.com/plotly/dash-sample-apps#project-boilerplate)
-
-### Notes on adding a new Dash for R app
-
-Contributing an app written with Dash for R is very similar to the steps outlined above. 
-
-1. Make the folder have the _exact same_ name as the Dash app name.
-
-2. Ensure that the file containing your app code is named `app.R`.
-
-3. The `Procfile` should contain 
-
-```
-web: R -f /app/app.R
-```
-
-4. Routing and request pathname prefixes should be set. One approach might be to include
-
-```
-appName <- Sys.getenv("DASH_APP_NAME")
-pathPrefix <- sprintf("/%s/", appName)
-
-Sys.setenv(DASH_ROUTES_PATHNAME_PREFIX = pathPrefix,
-           DASH_REQUESTS_PATHNAME_PREFIX = pathPrefix)
-```
-
-at the head of your `app.R` file.
-
-5. `run_server()` should be provided the host and port information explicitly, e.g.
-
-``
-app$run_server(host = "0.0.0.0", port = Sys.getenv('PORT', 8050))
-``
-
-### Making changes to an existing app
-
-Create a new branch - of any name - for your code changes.
-Then, navigate to the directory that has the same name as
-the DDS app.
-
-When you are finished, make a pull request from your branch to the master
-branch. Once you have passed your code review, you can merge your PR.
-
-## Dash app project structure
-
-#### Data
-- All data (csv, json, txt, etc) should be in a data folder
-- `/apps/{DASH_APP_NAME}/data/`
-
-#### Assets
-- All stylesheets and javascript should be in an assets folder
-- `/apps/{DASH_APP_NAME}/assets/`
-
-####  These files will still need to be present within the app folder.
-
-- **`Procfile`** gets run at root level for deployment
-    - Make sure python working directory is at the app level
-    - Ex. `web: gunicorn app:server`
-- **`requirements.txt`**
-    - Install project dependecies in a virtual environment
-
-#### Project boilerplate
-
-    apps
-    ├── ...
-    ├── {DASH_APP_NAME}         # app project level
-    │   ├── assets/             # all stylesheets and javascript files
-    │   ├── data/               # all data (csv, json, txt, etc)
-    │   ├── app.py              # dash application entry point
-    │   ├── Procfile            # used for heroku deployment (how to run app)
-    │   ├── requirements.txt    # project dependecies
-    │   └── ...                 
-    └── ...
-
-#### Handle relative path
-
-Assets should never use a relative path, as this will fail when deployed to Dash Enterprise due to use of subdirectories for serving apps.
-
-Reading from assets and data folder
-```Python
-Img(src="./assets/logo.png") will fail at root level
-```
-
-Tips
- 
--  Use [get_asset_url()](https://dash.plot.ly/dash-deployment-server/static-assets)
--  Use [Pathlib](https://docs.python.org/3/library/pathlib.html) for more flexibility
-
-```Python
-import pathlib
-import pandas as pd
-
-# get relative assets
-html.Img(src=app.get_asset_url('logo.png'))       # /assets/logo.png
-
-# get relative data
-
-DATA_PATH = pathlib.Path(__file__).parent.joinpath("data")  # /data
-df = pd.read_csv(DATA_PATH.joinpath("sample-data.csv"))    # /data/sample-data.csv
-
-with open(DATA_PATH.joinpath("sample-data.csv")) as f:  # /data/sample-data.csv
-    some_string = f.read()
-```
-
-## Developer Guide
-
-#### Creating a new project
-
-```
-# branch off master
-git checkout -b "{YOUR_CUSTOM_BRANCH}"
-
-# create a new folder in apps/
-mkdir /apps/{DASH_APP_NAME}
-
-# push new branch
-git push -u origin {YOUR_CUSTOM_BRANCH}
-```
-
-#### Before committing
-
-```
-# make sure your code is linted (we use black)
-black . --exclude=venv/ --check
-
-# if black is not installed
-pip install black
-```
-
-
-#### App is ready to go!
-```
-# once your branch is ready, make a PR into master!
-
-PR has two checkers.
-1. make sure your code passed the black linter
-2. make sure your project is deployed on dns playground
-```
+Go here.
+[1] The Lichess Open Database. 2021 [online] Available at
+<https://database.lichess.org/>[Accessed 5 April 2021].
+[2] Kaggle.com. 2021. Chess games analysis. [online] Available at:
+<https://www.kaggle.com/jac08h/chess-games-analysis> [Accessed 5 April 2021].
+[3] ebemunk. 2016. A Visual Look at 2 Million Chess Games. Available at:
+<https://blog.ebemunk.com/a-visual-look-at-2-million-chess-games/>[Accessed 5 April 2021].
 
